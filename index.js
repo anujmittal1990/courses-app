@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 let admin = [];
+let courses = [];
 app.use(express.json());
 
 app.post("/admin_signup/", (req, res) => {
@@ -21,13 +22,27 @@ app.post("/admin_login/", (req, res) => {
   }
 });
 
+app.get("/admin/all_courses/", (req, res) => {
+  const { username, password } = req.headers;
+  const adm = admin.find(
+    (a) => a.username == username && a.password == password
+  );
+  if (adm) {
+    res.send(courses);
+  } else {
+    res.status(403).json({ message: "Admin authentication failed" });
+  }
+});
+
 app.post("/admin/courses/", (req, res) => {
   const { username, password } = req.headers;
   const adm = admin.find(
     (a) => a.username == username && a.password == password
   );
   if (adm) {
-    res.status(200).json({ message: "Admin authenticated Successfully" });
+    req.body.id = Date.now();
+    courses.push(req.body);
+    res.send(courses);
   } else {
     res.status(403).json({ message: "Admin authentication failed" });
   }
