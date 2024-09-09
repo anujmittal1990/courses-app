@@ -4,12 +4,14 @@ let admin = [];
 let courses = [];
 app.use(express.json());
 
+//Admin Signup
 app.post("/admin_signup/", (req, res) => {
   //admin.push({ counter: req.query.counter });
   admin.push(req.body);
   res.send(`{ message: 'Admin created successfully' }`);
 });
 
+//Admin Login
 app.post("/admin_login/", (req, res) => {
   const { username, password } = req.headers;
   const adm = admin.find(
@@ -22,6 +24,7 @@ app.post("/admin_login/", (req, res) => {
   }
 });
 
+//Get all Courses
 app.get("/admin/all_courses/", (req, res) => {
   const { username, password } = req.headers;
   const adm = admin.find(
@@ -34,6 +37,24 @@ app.get("/admin/all_courses/", (req, res) => {
   }
 });
 
+//Get Course
+app.put("/admin/courses/:id/", (req, res) => {
+  const { username, password } = req.headers;
+  const adm = admin.find(
+    (a) => a.username == username && a.password == password
+  );
+  if (adm) {
+    const course = courses.find((c) => c.id == parseInt(req.params.id));
+    if (course) {
+      Object.assign(course, req.body);
+      res.json(courses);
+    } else {
+      res.status(404).json({ message: "Course not found" });
+    }
+  }
+});
+
+//Create Course
 app.post("/admin/courses/", (req, res) => {
   const { username, password } = req.headers;
   const adm = admin.find(
@@ -48,6 +69,7 @@ app.post("/admin/courses/", (req, res) => {
   }
 });
 
+//All Admin Regisrations
 app.get("/all_adm_reg", (req, res) => {
   res.send(admin);
 });
