@@ -1,72 +1,55 @@
 const express = require("express");
 const app = express();
+app.use(express.json());
+
 let admin = [];
 let courses = [];
-app.use(express.json());
+
+const adminAuthenticate = (req, res, next) => {
+  const { username, password } = req.headers;
+  const adm = admin.find(
+    (a) => a.username === username && a.password === password
+  );
+  if (adm) {
+    next();
+  } else {
+    res.status(403).json({ message: "Admin authentication failed" });
+  }
+};
 
 //Admin Signup
 app.post("/admin_signup/", (req, res) => {
   //admin.push({ counter: req.query.counter });
   admin.push(req.body);
-  res.send(`{ message: 'Admin created successfully' }`);
+  res.json({ message: "Admin created successfully" });
 });
 
 //Admin Login
-app.post("/admin_login/", (req, res) => {
-  const { username, password } = req.headers;
-  const adm = admin.find(
-    (a) => a.username == username && a.password == password
-  );
-  if (adm) {
-    res.status(200).json({ message: "Admin authenticated Successfully" });
-  } else {
-    res.status(403).json({ message: "Admin authentication failed" });
-  }
+app.post("/admin/login/", adminAuthenticate, (req, res) => {
+  res.status(200).json({ message: "Admin authenticated Successfully" });
 });
 
-//Get all Courses
-app.get("/admin/all_courses/", (req, res) => {
-  const { username, password } = req.headers;
-  const adm = admin.find(
-    (a) => a.username == username && a.password == password
-  );
-  if (adm) {
-    res.send(courses);
+//Update Course
+app.put("/admin/courses/:id/", adminAuthenticate, (req, res) => {
+  const course = courses.find((c) => c.id == parseInt(req.params.id));
+  if (course) {
+    Object.assign(course, req.body);
+    res.json(courses);
   } else {
-    res.status(403).json({ message: "Admin authentication failed" });
-  }
-});
-
-//Get Course
-app.put("/admin/courses/:id/", (req, res) => {
-  const { username, password } = req.headers;
-  const adm = admin.find(
-    (a) => a.username == username && a.password == password
-  );
-  if (adm) {
-    const course = courses.find((c) => c.id == parseInt(req.params.id));
-    if (course) {
-      Object.assign(course, req.body);
-      res.json(courses);
-    } else {
-      res.status(404).json({ message: "Course not found" });
-    }
+    res.status(404).json({ message: "Course not found" });
   }
 });
 
 //Create Course
-app.post("/admin/courses/", (req, res) => {
-  const { username, password } = req.headers;
-  const adm = admin.find(
-    (a) => a.username == username && a.password == password
-  );
-  if (adm) {
-    req.body.id = Date.now();
-    courses.push(req.body);
-    res.send(courses);
-  } else {
-    res.status(403).json({ message: "Admin authentication failed" });
-  }
+app.post("/admin/courses/", adminAuthenticate, (req, res) => {
+  req.body.id = Date.now();
+  courses.push(req.body);
+  res.send(courses);
+});
+
+//Get all Courses
+app.get("/admin/all_courses/", adminAuthenticate, (req, res) => {
+  res.json({ courses: courses });
 });
 
 //All Admin Regisrations
