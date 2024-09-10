@@ -52,11 +52,6 @@ app.get("/admin/all_courses/", adminAuthenticate, (req, res) => {
   res.json({ courses: courses });
 });
 
-//All Admin Regisrations
-app.get("/all_adm_reg", (req, res) => {
-  res.send(admin);
-});
-
 app.listen(3000, () => {
   console.log(`Server started at Port: ${3000}`);
 });
