@@ -4,6 +4,8 @@ app.use(express.json());
 
 let admin = [];
 let courses = [];
+let user = [];
+let purchased_courses = [];
 
 const adminAuthenticate = (req, res, next) => {
   const { username, password } = req.headers;
@@ -14,6 +16,18 @@ const adminAuthenticate = (req, res, next) => {
     next();
   } else {
     res.status(403).json({ message: "Admin authentication failed" });
+  }
+};
+
+const userAuthenticate = (req, res, next) => {
+  const { username, password } = req.headers;
+  const usr = user.find(
+    (a) => a.username === username && a.password === password
+  );
+  if (usr) {
+    next();
+  } else {
+    res.status(403).json({ message: "User authentication failed" });
   }
 };
 
@@ -40,6 +54,16 @@ app.put("/admin/courses/:id/", adminAuthenticate, (req, res) => {
   }
 });
 
+app.delete("/admin/del_course", adminAuthenticate, (req, res) => {
+  const del_course = courses.find((c) => c.id == req.headers.id);
+  const index = courses.indexOf(del_course);
+  if (index > -1) {
+    // only splice array when item is found
+    courses.splice(index, 1); // 2nd parameter means remove one item only
+  }
+  res.json(courses);
+});
+
 //Create Course
 app.post("/admin/courses/", adminAuthenticate, (req, res) => {
   req.body.id = Date.now();
@@ -50,6 +74,30 @@ app.post("/admin/courses/", adminAuthenticate, (req, res) => {
 //Get all Courses
 app.get("/admin/all_courses/", adminAuthenticate, (req, res) => {
   res.json({ courses: courses });
+});
+
+//User Signup
+app.post("/user_signup/", (req, res) => {
+  user.push(req.body);
+  res.json({ message: "User created successfully" });
+});
+
+//User Login
+app.post("/user/login/", userAuthenticate, (req, res) => {
+  res.status(200).json({ message: "User authenticated Successfully" });
+});
+
+//Get all user Courses
+app.get("/user/all_courses/", userAuthenticate, (req, res) => {
+  const pub_true = courses.filter((a) => a.published == "true");
+  res.json({ courses: pub_true });
+});
+
+//Purchase Courses
+app.post("/user/pur_courses/", userAuthenticate, (req, res) => {
+  const pur_course = courses.find((c) => c.id == req.headers.course_id);
+  pur_course.purchase_id = Date.now();
+  res.json(pur_course);
 });
 
 app.listen(3000, () => {
