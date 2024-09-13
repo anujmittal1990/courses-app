@@ -97,7 +97,8 @@ app.get("/user/all_courses/", userAuthenticate, (req, res) => {
 app.post("/user/pur_courses/", userAuthenticate, (req, res) => {
   const pur_course = courses.find((c) => c.id == req.headers.course_id);
   pur_course.purchase_id = Date.now();
-  res.json(pur_course);
+  purchased_courses.push(pur_course);
+  res.json(purchased_courses);
 });
 
 app.listen(3000, () => {
